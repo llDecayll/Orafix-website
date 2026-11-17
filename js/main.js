@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initBackToTop();
   initBookingForms();
   initContactForms();
+  initLeadTracking();
 });
 
 /* --------------------------------------------------------------------------
@@ -290,6 +291,16 @@ function initBookingForms() {
       }
 
       showConfirmation(name, service, date);
+
+      // Push Google Tag Manager conversion event
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'generate_lead',
+        lead_type: 'appointment_booking',
+        treatment: service,
+        preferred_date: date
+      });
+
       form.reset();
     });
   });
@@ -305,7 +316,39 @@ function initContactForms() {
       e.preventDefault();
       const name = (form.querySelector('input[name="name"]')?.value || 'Friend').trim();
       alert(`Thank you ${name}! Your message has been sent successfully to OraFix Dental Care. We will reply to your enquiry shortly.`);
+
+      // Push Google Tag Manager conversion event
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'generate_lead',
+        lead_type: 'contact_form',
+        patient_name: name
+      });
+
       form.reset();
     });
+  });
+}
+
+/* --------------------------------------------------------------------------
+   9. Lead Interaction Tracking (Phone Calls & WhatsApp)
+   -------------------------------------------------------------------------- */
+function initLeadTracking() {
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('a');
+    if (!target) return;
+    const href = target.getAttribute('href') || '';
+    if (href.startsWith('tel:')) {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'phone_call_click',
+        phone_number: href.replace('tel:', '')
+      });
+    } else if (href.includes('wa.me') || href.includes('whatsapp.com')) {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'whatsapp_click'
+      });
+    }
   });
 }
